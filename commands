@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=5 uvicorn main:app --reload --host 0.0.0.0 --port 8000 # Això al 133
