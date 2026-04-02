@@ -242,6 +242,8 @@
   <button class="btn" onclick="addNode('fn-vlm')">+ ask_image</button>
   <button class="btn" onclick="addNode('fn-ner')">+ extract_entities</button>
   <button class="btn" onclick="addNode('fn-coords')">+ to_coordinates</button>
+  <button class="btn" onclick="addNode('fn-asktext')">+ ask_text</button>
+  <button class="btn" onclick="addNode('fn-concat')">+ concat_text</button>
   <button class="btn" onclick="addNode('output')">+ Output</button>
   <button class="btn run" onclick="runAll()">▶ Run All</button>
   <button class="btn danger" onclick="clearAll()">✕ Clear</button>
@@ -288,7 +290,7 @@ const NODE_DEFS = {
     label: 'Image Input', tag: 'input', typeClass: 'type-input',
     ports: { out: ['image_b64'] },
     body: (n) => `
-      <label>image (128×128)</label>
+      <label>image (512×512)</label>
       <button class="btn" style="width:100%;margin-bottom:4px" onclick="pickImage('${n.id}')">Upload…</button>
       ${n.data.image_b64 ? `<img class="img-preview" src="data:image/png;base64,${n.data.image_b64}">` : ''}
     `
@@ -319,6 +321,20 @@ const NODE_DEFS = {
     ports: { in: ['places_text'], out: ['coordinates'] },
     body: (n) => `
       <label style="font-size:9px;color:var(--text-dim)">places_text: comma-separated</label>
+      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
+    `
+  },
+  'fn-asktext': {
+    label: 'ask_text', tag: 'fn', typeClass: 'type-fn',
+    ports: { in: ['context','query'], out: ['answer'] },
+    body: (n) => `
+      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
+    `
+  },
+  'fn-concat': {
+    label: 'concat_text', tag: 'fn', typeClass: 'type-fn',
+    ports: { in: ['text_a','text_b'], out: ['result'] },
+    body: (n) => `
       <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
     `
   },
@@ -540,9 +556,9 @@ document.getElementById('file-input').addEventListener('change', e => {
     const img = new Image();
     img.onload = () => {
       const c = document.createElement('canvas');
-      c.width = c.height = 128;
+      c.width = c.height = 512;
       const ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0, 128, 128);
+      ctx.drawImage(img, 0, 0, 512, 512);
       const b64 = c.toDataURL('image/png').split(',')[1];
       nodes[pendingImageNode].data.image_b64 = b64;
       renderNode(nodes[pendingImageNode]);
@@ -595,8 +611,8 @@ function resolveOutput(nid, portName) {
 // ─── Run pipeline ─────────────────────────────────────────────────────
 async function runAll() {
   // Topological: just run fn nodes in creation order (simple, works for DAGs)
-  const order = Object.values(nodes).filter(n =>
-    ['fn-detect','fn-vlm','fn-ner','fn-coords'].includes(n.type)
+const order = Object.values(nodes).filter(n =>
+    ['fn-detect','fn-vlm','fn-ner','fn-coords','fn-asktext','fn-concat'].includes(n.type)
   );
 
   for (const n of order) {
@@ -653,6 +669,29 @@ async function runNode(n) {
       const res = await apiFetch('/to_coordinates/', { places });
       n.data._out = { coordinates: res.results };
       setStatus(n, 'ok', `${res.results?.length} places resolved`);
+    }
+   else if (n.type === 'fn-asktext') {
+      const context = resolveInput(n.id,'context');
+      const query   = resolveInput(n.id,'query');
+      if (!query) throw new Error('no query');
+      const res = await apiFetch('/ask_text/', {
+        context: context || '',
+        query,
+        ip_address: '158.109.8.133:7000',
+        model_name: 'mistralai/Pixtral-12B-2409'
+      });
+      n.data._out = { answer: res.answer };
+      setStatus(n, 'ok', res.answer?.slice(0,60)+'…');
+    }
+    else if (n.type === 'fn-concat') {
+      const text_a = resolveInput(n.id,'text_a');
+      const text_b = resolveInput(n.id,'text_b');
+      const res = await apiFetch('/concat_text/', {
+        text_a: text_a || '',
+        text_b: text_b || ''
+      });
+      n.data._out = { result: res.result };
+      setStatus(n, 'ok', res.result?.slice(0,60));
     }
   } catch(err) {
     setStatus(n, 'err', String(err));

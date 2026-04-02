@@ -462,7 +462,7 @@ def ask_question_with_context(
         str: Model response
     """
 
-    base_url = f"http://{ip_address or '158.109.8.133:7001'}/v1"
+    base_url = f"http://{ip_address or '158.109.8.133:7000'}/v1"
     api_key = validation_token or "EMPTY"
 
     client = OpenAI(
