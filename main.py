@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 import base64
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ImageColor
 import torch
 from transformers import Owlv2Processor, Owlv2ForObjectDetection
 import spacy
@@ -17,6 +17,9 @@ from geopy.extra.rate_limiter import RateLimiter
 from urllib.parse import quote
 import tqdm
 import time
+import math
+import re
+
 # Load once globally (fast)
 nlp = spacy.load("en_core_web_trf")
 
@@ -548,3 +551,142 @@ async def concat_text(request: ConcatRequest):
     - The concatenation of text_a and text_b
     """
     return ConcatResponse(result=request.text_a + request.text_b)
+
+
+# --- Hue and Cues helpers ---
+
+class DominantColorRequest(BaseModel):
+    image_base64: str = Field(..., description="Base64-encoded input image")
+    k: Optional[int] = Field(
+        5,
+        ge=1,
+        le=16,
+        description="Number of palette colors to consider while extracting the dominant one"
+    )
+
+
+class DominantColorResponse(BaseModel):
+    hex: str = Field(..., description="Dominant color in hex format")
+    rgb: List[int] = Field(..., description="Dominant color as [R, G, B]")
+
+
+class ColorSimilarityRequest(BaseModel):
+    color_a: str = Field(..., example="#ff6600", description="First color (hex, name, rgb() or 'r,g,b')")
+    color_b: str = Field(..., example="orange", description="Second color (hex, name, rgb() or 'r,g,b')")
+
+
+class ColorSimilarityResponse(BaseModel):
+    similarity: float = Field(..., description="Similarity score in [0, 1], where 1 means identical colors")
+    distance: float = Field(..., description="Euclidean RGB distance")
+    rgb_a: List[int] = Field(..., description="Parsed first color as [R, G, B]")
+    rgb_b: List[int] = Field(..., description="Parsed second color as [R, G, B]")
+
+
+def dominant_color_from_image(image: Image.Image, k: int = 5) -> List[int]:
+    """
+    Extract the dominant RGB color from an image using adaptive palette quantization.
+    """
+
+    image = image.convert("RGB")
+    image.thumbnail((256, 256))
+
+    quantized = image.convert("P", palette=Image.ADAPTIVE, colors=k)
+    colors = quantized.getcolors(maxcolors=256 * 256)
+    if not colors:
+        raise ValueError("Could not extract colors from image")
+
+    dominant_index = max(colors, key=lambda item: item[0])[1]
+    palette = quantized.getpalette()
+    rgb = palette[dominant_index * 3: dominant_index * 3 + 3]
+
+    return [int(rgb[0]), int(rgb[1]), int(rgb[2])]
+
+
+def rgb_to_hex(rgb: List[int]) -> str:
+    return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
+
+
+def parse_color_to_rgb(color: str) -> List[int]:
+    """
+    Parse a color string into [R, G, B].
+    Accepted formats: '#RRGGBB', CSS color names, 'rgb(r,g,b)', and 'r,g,b'.
+    """
+
+    value = color.strip()
+
+    try:
+        parsed = ImageColor.getrgb(value)
+        return [int(parsed[0]), int(parsed[1]), int(parsed[2])]
+    except Exception:
+        pass
+
+    rgb_fn = re.match(r"^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$", value, re.IGNORECASE)
+    if rgb_fn:
+        nums = [int(rgb_fn.group(1)), int(rgb_fn.group(2)), int(rgb_fn.group(3))]
+        if all(0 <= n <= 255 for n in nums):
+            return nums
+
+    comma_rgb = re.match(r"^\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*$", value)
+    if comma_rgb:
+        nums = [int(comma_rgb.group(1)), int(comma_rgb.group(2)), int(comma_rgb.group(3))]
+        if all(0 <= n <= 255 for n in nums):
+            return nums
+
+    raise ValueError(f"Invalid color format '{color}'")
+
+
+def color_similarity_score(rgb_a: List[int], rgb_b: List[int]) -> tuple[float, float]:
+    """
+    Compute normalized color similarity from Euclidean RGB distance.
+    Returns (similarity, distance).
+    """
+
+    distance = math.sqrt(
+        (rgb_a[0] - rgb_b[0]) ** 2 +
+        (rgb_a[1] - rgb_b[1]) ** 2 +
+        (rgb_a[2] - rgb_b[2]) ** 2
+    )
+    max_distance = math.sqrt(3 * (255 ** 2))
+    similarity = max(0.0, 1.0 - (distance / max_distance))
+    return similarity, distance
+
+
+@app.post(
+    "/dominant_color/",
+    response_model=DominantColorResponse,
+    summary="Extract dominant color",
+    description="Extracts a representative dominant color from a base64-encoded image."
+)
+async def dominant_color(request: DominantColorRequest):
+    try:
+        image = decode_base64_image(request.image_base64)
+        rgb = dominant_color_from_image(image, k=request.k or 5)
+        return DominantColorResponse(hex=rgb_to_hex(rgb), rgb=rgb)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post(
+    "/color_similarity/",
+    response_model=ColorSimilarityResponse,
+    summary="Compare two colors",
+    description="Parses two color strings and returns a normalized similarity score."
+)
+async def color_similarity(request: ColorSimilarityRequest):
+    try:
+        rgb_a = parse_color_to_rgb(request.color_a)
+        rgb_b = parse_color_to_rgb(request.color_b)
+        similarity, distance = color_similarity_score(rgb_a, rgb_b)
+        return ColorSimilarityResponse(
+            similarity=round(similarity, 4),
+            distance=round(distance, 2),
+            rgb_a=rgb_a,
+            rgb_b=rgb_b
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

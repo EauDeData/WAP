@@ -244,6 +244,8 @@
   <button class="btn" onclick="addNode('fn-coords')">+ to_coordinates</button>
   <button class="btn" onclick="addNode('fn-asktext')">+ ask_text</button>
   <button class="btn" onclick="addNode('fn-concat')">+ concat_text</button>
+  <button class="btn" onclick="addNode('fn-dominant-color')">+ dominant_color</button>
+  <button class="btn" onclick="addNode('fn-color-similarity')">+ color_similarity</button>
   <button class="btn" onclick="addNode('output')">+ Output</button>
   <button class="btn run" onclick="runAll()">▶ Run All</button>
   <button class="btn danger" onclick="clearAll()">✕ Clear</button>
@@ -335,6 +337,21 @@ const NODE_DEFS = {
     label: 'concat_text', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['text_a','text_b'], out: ['result'] },
     body: (n) => `
+      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
+    `
+  },
+  'fn-dominant-color': {
+    label: 'dominant_color', tag: 'fn', typeClass: 'type-fn',
+    ports: { in: ['image_b64'], out: ['hex','rgb'] },
+    body: (n) => `
+      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
+    `
+  },
+  'fn-color-similarity': {
+    label: 'color_similarity', tag: 'fn', typeClass: 'type-fn',
+    ports: { in: ['color_a','color_b'], out: ['similarity','distance','rgb_a','rgb_b'] },
+    body: (n) => `
+      <label style="font-size:9px;color:var(--text-dim)">Use #RRGGBB, color names, rgb(r,g,b), or r,g,b</label>
       <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
     `
   },
@@ -612,7 +629,7 @@ function resolveOutput(nid, portName) {
 async function runAll() {
   // Topological: just run fn nodes in creation order (simple, works for DAGs)
 const order = Object.values(nodes).filter(n =>
-    ['fn-detect','fn-vlm','fn-ner','fn-coords','fn-asktext','fn-concat'].includes(n.type)
+    ['fn-detect','fn-vlm','fn-ner','fn-coords','fn-asktext','fn-concat','fn-dominant-color','fn-color-similarity'].includes(n.type)
   );
 
   for (const n of order) {
@@ -693,8 +710,28 @@ async function runNode(n) {
       n.data._out = { result: res.result };
       setStatus(n, 'ok', res.result?.slice(0,60));
     }
+    else if (n.type === 'fn-dominant-color') {
+      const img = resolveInput(n.id,'image_b64');
+      if (!img) throw new Error('no image');
+      const res = await apiFetch('/dominant_color/', { image_base64: img, k: 5 });
+      n.data._out = { hex: res.hex, rgb: res.rgb };
+      setStatus(n, 'ok', `${res.hex} (${res.rgb.join(',')})`);
+    }
+    else if (n.type === 'fn-color-similarity') {
+      const color_a = resolveInput(n.id,'color_a');
+      const color_b = resolveInput(n.id,'color_b');
+      if (!color_a || !color_b) throw new Error('need both colors');
+      const res = await apiFetch('/color_similarity/', { color_a, color_b });
+      n.data._out = {
+        similarity: res.similarity,
+        distance: res.distance,
+        rgb_a: res.rgb_a,
+        rgb_b: res.rgb_b
+      };
+      setStatus(n, 'ok', `sim:${res.similarity} dist:${res.distance}`);
+    }
   } catch(err) {
-    setStatus(n, 'err', String(err));
+    setStatus(n, 'err', err?.message || String(err));
   }
   renderNode(n);
   reRegisterPorts(n);
@@ -711,7 +748,29 @@ async function apiFetch(path, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  if (!r.ok) {
+    let detail = '';
+    try {
+      const data = await r.json();
+      if (typeof data?.detail === 'string') {
+        detail = data.detail;
+      } else if (Array.isArray(data?.detail)) {
+        detail = data.detail.map(d => d?.msg || JSON.stringify(d)).join('; ');
+      } else if (data && typeof data === 'object') {
+        detail = JSON.stringify(data);
+      }
+    } catch (_) {
+      // Ignore parse errors; fallback to status text below.
+    }
+
+    if (!detail) detail = r.statusText || 'Request failed';
+
+
+    if (r.status === 422) {
+      throw new Error(`Invalid input for ${path}: ${detail}`);
+    }
+    throw new Error(`Request failed (${r.status}) on ${path}: ${detail}`);
+  }
   return r.json();
 }
 
