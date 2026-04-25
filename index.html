@@ -29,7 +29,6 @@
     flex-direction: column;
   }
 
-  /* ── Toolbar ── */
   #toolbar {
     display: flex;
     align-items: center;
@@ -40,12 +39,7 @@
     flex-shrink: 0;
     flex-wrap: wrap;
   }
-
-  #toolbar span {
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-right: 6px;
-  }
+  #toolbar span { font-size: 11px; color: var(--text-dim); margin-right: 6px; }
 
   .btn {
     font-family: 'Courier New', monospace;
@@ -63,27 +57,10 @@
   .btn.run:hover { background: var(--accent3); color: #111; }
   .btn.danger { border-color: var(--accent2); color: var(--accent2); }
 
-  /* ── Canvas ── */
-  #canvas-wrap {
-    position: relative;
-    flex: 1;
-    overflow: hidden;
-  }
+  #canvas-wrap { position: relative; flex: 1; overflow: hidden; }
+  #svg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  #canvas { position: absolute; inset: 0; z-index: 1; }
 
-  #svg-layer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  #canvas {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-  }
-
-  /* ── Nodes ── */
   .node {
     position: absolute;
     width: var(--node-w);
@@ -95,13 +72,11 @@
     z-index: 10;
     transition: border-color .15s, box-shadow .15s;
   }
-  .node:hover, .node.selected {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent)22;
-  }
+  .node:hover, .node.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent)22; }
   .node.type-input  { border-top: 2px solid #f7a94f; }
   .node.type-fn     { border-top: 2px solid var(--accent); }
   .node.type-output { border-top: 2px solid var(--accent3); }
+  .node.type-custom { border-top: 2px solid #b84ff7; }
 
   .node-header {
     padding: 7px 10px;
@@ -110,27 +85,14 @@
     letter-spacing: .05em;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 4px;
     border-bottom: 1px solid var(--border);
   }
-  .node-header .tag {
-    font-size: 9px;
-    color: var(--text-dim);
-    font-weight: normal;
-  }
+  .node-header .tag { font-size: 9px; color: var(--text-dim); font-weight: normal; margin-left: auto; }
 
   .node-body { padding: 8px 10px; }
-
-  /* labels & inputs inside nodes */
-  .node-body label {
-    display: block;
-    font-size: 10px;
-    color: var(--text-dim);
-    margin-bottom: 3px;
-  }
-  .node-body input[type=text],
-  .node-body textarea,
-  .node-body select {
+  .node-body label { display: block; font-size: 10px; color: var(--text-dim); margin-bottom: 3px; }
+  .node-body input[type=text], .node-body textarea, .node-body select {
     width: 100%;
     font-family: 'Courier New', monospace;
     font-size: 11px;
@@ -142,94 +104,168 @@
     resize: none;
     outline: none;
   }
-  .node-body input[type=text]:focus,
-  .node-body textarea:focus { border-color: var(--accent); }
-
+  .node-body input[type=text]:focus, .node-body textarea:focus { border-color: var(--accent); }
   .node-body .img-preview {
-    width: 100%;
-    height: 80px;
-    object-fit: contain;
-    border-radius: 3px;
-    background: var(--bg);
-    display: block;
-    margin-top: 4px;
+    width: 100%; height: 80px; object-fit: contain;
+    border-radius: 3px; background: var(--bg); display: block; margin-top: 4px;
   }
-
   .node-body .output-val {
-    font-size: 10px;
-    color: var(--accent3);
-    word-break: break-all;
-    max-height: 80px;
-    overflow-y: auto;
-    background: var(--bg);
-    padding: 4px 6px;
-    border-radius: 3px;
-    border: 1px solid var(--border);
-    white-space: pre-wrap;
+    font-size: 10px; color: var(--accent3); word-break: break-all;
+    max-height: 80px; overflow-y: auto; background: var(--bg);
+    padding: 4px 6px; border-radius: 3px; border: 1px solid var(--border); white-space: pre-wrap;
   }
-
-  .node-body .status {
-    font-size: 10px;
-    color: var(--text-dim);
-    margin-top: 4px;
-  }
+  .node-body .status { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
   .node-body .status.ok  { color: var(--accent3); }
   .node-body .status.err { color: var(--accent2); }
 
-  /* ── Ports ── */
-  .ports-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 0 0 4px 0;
-    min-height: 14px;
-  }
+  .ports-row { display: flex; justify-content: space-between; padding: 0 0 4px 0; min-height: 14px; }
   .port-group { display: flex; flex-direction: column; gap: 6px; }
   .port-group.right { align-items: flex-end; }
-
-  .port-label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10px;
-    color: var(--text-dim);
-    position: relative;
-  }
-
+  .port-label { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-dim); position: relative; }
   .port {
-    width: calc(var(--port-r)*2);
-    height: calc(var(--port-r)*2);
-    border-radius: 50%;
-    border: 2px solid var(--border);
-    background: var(--bg);
-    cursor: crosshair;
-    flex-shrink: 0;
+    width: calc(var(--port-r)*2); height: calc(var(--port-r)*2);
+    border-radius: 50%; border: 2px solid var(--border);
+    background: var(--bg); cursor: crosshair; flex-shrink: 0;
     transition: border-color .12s, background .12s;
   }
   .port:hover, .port.connected { border-color: var(--accent); background: var(--accent); }
   .port.out { border-color: #f7a94f; }
   .port.out:hover, .port.out.connected { background: #f7a94f; }
-
-  /* port is positioned so that it overflows the node edge */
-  .port-label.input-port { margin-left: -17px; }
+  .port-label.input-port  { margin-left: -17px; }
   .port-label.output-port { margin-right: -17px; }
 
-  /* SVG wires */
   .wire { fill: none; stroke: var(--accent); stroke-width: 1.5; opacity: .7; pointer-events: stroke; cursor: pointer; }
   .wire:hover { stroke: var(--accent2); opacity: 1; stroke-width: 2; }
   .wire-preview { fill:none; stroke: var(--accent); stroke-width:1.5; stroke-dasharray:5,4; opacity:.5; }
 
-  /* file input hidden */
   #file-input { display: none; }
-
-  /* node delete btn */
-  .node-del {
-    font-size: 10px;
-    color: var(--text-dim);
-    cursor: pointer;
-    padding: 0 2px;
-    line-height: 1;
-  }
+  .node-del { font-size: 10px; color: var(--text-dim); cursor: pointer; padding: 0 2px; line-height: 1; }
   .node-del:hover { color: var(--accent2); }
+
+  .btn-x2 {
+    font-size: 9px; color: #b84ff7;
+    border: 1px solid #b84ff7; border-radius: 3px; padding: 1px 4px;
+    cursor: pointer; background: transparent;
+    font-family: 'Courier New', monospace; transition: background .12s;
+  }
+  .btn-x2:hover { background: rgba(184,79,247,0.2); }
+
+  /* ── Create-Function box ── */
+  .fn-creator {
+    position: absolute;
+    min-width: 260px;
+    min-height: 160px;
+    background: rgba(79, 142, 247, 0.06);
+    border: 2px dashed rgba(79, 142, 247, 0.5);
+    border-radius: 10px;
+    z-index: 5;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .fn-creator-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px 6px;
+    border-bottom: 1px solid rgba(79,142,247,0.25);
+    flex-shrink: 0;
+    cursor: move;
+  }
+  .fn-creator-header input[type=text] {
+    flex: 1;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(79,142,247,0.4);
+    border-radius: 3px;
+    color: var(--text);
+    padding: 3px 6px;
+    outline: none;
+    cursor: text;
+    min-width: 0;
+  }
+  .fn-creator-header input[type=text]:focus { border-color: var(--accent); }
+
+  .fn-creator-define-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; padding: 3px 8px;
+    border: 1px solid var(--accent); border-radius: 3px;
+    background: rgba(79,142,247,0.15); color: var(--accent);
+    cursor: pointer; white-space: nowrap; transition: background .15s;
+    flex-shrink: 0;
+  }
+  .fn-creator-define-btn:hover { background: rgba(79,142,247,0.3); }
+
+  .fn-creator-body {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    padding: 10px 0;
+    /* transparent to clicks so nodes inside are reachable */
+    pointer-events: none;
+  }
+  .fn-creator-ports {
+    pointer-events: all;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 6px;
+    justify-content: flex-start;
+    min-width: 34px;
+  }
+  .fc-port-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .fc-port-row.input-side  { margin-left: -12px; }
+  .fc-port-row.output-side { margin-right: -12px; justify-content: flex-end; }
+  .fc-port-row span { font-size: 9px; color: rgba(79,142,247,0.85); white-space: nowrap; }
+
+  .fc-port {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: var(--bg);
+    cursor: crosshair;
+    flex-shrink: 0;
+    display: block;
+    transition: border-color .12s, background .12s;
+  }
+  .fc-port.out { border-color: #f7a94f; }
+  .fc-port:hover, .fc-port.connected { background: var(--accent); }
+  .fc-port.out:hover, .fc-port.out.connected { background: #f7a94f; }
+
+  .fn-creator-add-btn {
+    pointer-events: all;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 1px solid rgba(79,142,247,0.5);
+    background: rgba(79,142,247,0.1);
+    color: var(--accent);
+    font-size: 14px; line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background .12s;
+    padding: 0;
+  }
+  .fn-creator-add-btn:hover { background: rgba(79,142,247,0.3); }
+
+  .fn-creator-resize {
+    position: absolute; right: 3px; bottom: 3px;
+    width: 18px; height: 18px;
+    cursor: se-resize;
+    font-size: 13px;
+    display: flex; align-items: flex-end; justify-content: flex-end;
+    color: rgba(79,142,247,0.5);
+    pointer-events: all;
+  }
+  .fn-creator-resize:hover { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -250,8 +286,9 @@
   <button class="btn" onclick="addNode('fn-dominant-color')">+ dominant_color</button>
   <button class="btn" onclick="addNode('fn-color-similarity')">+ color_similarity</button>
   <button class="btn" onclick="addNode('output')">+ Output</button>
-  <button class="btn run" onclick="runAll()">▶ Run All</button>
-  <button class="btn danger" onclick="clearAll()">✕ Clear</button>
+  <button class="btn" style="border-color:#b84ff7;color:#b84ff7" onclick="addFnCreator()">⬡ Create Function</button>
+  <button class="btn run" onclick="runAll()">&#9654; Run All</button>
+  <button class="btn danger" onclick="clearAll()">&#10005; Clear</button>
   <span style="margin-left:auto;color:var(--text-dim);font-size:10px">drag nodes · drag port→port to connect · click wire to delete</span>
 </div>
 
@@ -263,22 +300,18 @@
 <input type="file" id="file-input" accept="image/*">
 
 <script>
-// ─── State ───────────────────────────────────────────────────────────
+// ─── State ────────────────────────────────────────────────────────────
 const API = 'http://158.109.8.116:8500';
-let nodes = {};       // id → {el, type, x, y, ports:{name:{el,dir}}, data:{}}
-let wires = [];       // [{from:{nid,port}, to:{nid,port}, el}]
+let nodes = {};
+let wires = [];
 let nodeCount = 0;
 
-const canvas    = document.getElementById('canvas');
-const svgLayer  = document.getElementById('svg-layer');
-const canvasWrap= document.getElementById('canvas-wrap');
+const canvas     = document.getElementById('canvas');
+const svgLayer   = document.getElementById('svg-layer');
+const canvasWrap = document.getElementById('canvas-wrap');
 
-// ─── Port registry ───────────────────────────────────────────────────
-// For each node port element, store {nid, portName, dir}
 const portMap = new WeakMap();
-
-// ─── Wire drawing state ───────────────────────────────────────────────
-let draggingFrom = null; // {nid, portName, dir, el}
+let draggingFrom = null;
 let previewLine  = null;
 
 // ─── Node definitions ─────────────────────────────────────────────────
@@ -286,107 +319,81 @@ const NODE_DEFS = {
   'text-input': {
     label: 'Text Input', tag: 'input', typeClass: 'type-input',
     ports: { out: ['text'] },
-    body: (n) => `
-      <label>value</label>
-      <textarea rows="2" oninput="nodeData('${n.id}','text',this.value)">${n.data.text||''}</textarea>
-    `
+    body: (n) => `<label>value</label>
+      <textarea rows="2" oninput="nodeData('${n.id}','text',this.value)">${n.data.text||''}</textarea>`
   },
   'image-input': {
     label: 'Image Input', tag: 'input', typeClass: 'type-input',
     ports: { out: ['image_b64'] },
-    body: (n) => `
-      <label>image (512×512)</label>
-      <button class="btn" style="width:100%;margin-bottom:4px" onclick="pickImage('${n.id}')">Upload…</button>
-      ${n.data.image_b64 ? `<img class="img-preview" src="data:image/png;base64,${n.data.image_b64}">` : ''}
-    `
+    body: (n) => `<label>image (512x512)</label>
+      <button class="btn" style="width:100%;margin-bottom:4px" onclick="pickImage('${n.id}')">Upload...</button>
+      ${n.data.image_b64 ? `<img class="img-preview" src="data:image/png;base64,${n.data.image_b64}">` : ''}`
   },
   'fn-detect': {
     label: 'detect_object', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['object_name','image_b64'], out: ['detected','confidence','cropped_image'] },
-    body: (n) => `
-      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
-    `
+    body: (n) => `<div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>`
   },
   'fn-vlm': {
     label: 'ask_image', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['image_b64','question'], out: ['answer'] },
-    body: (n) => `
-      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
-    `
+    body: (n) => `<div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>`
   },
   'fn-ner': {
     label: 'extract_entities', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['text','entity_type'], out: ['entities'] },
-    body: (n) => `
-      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
-    `
+    body: (n) => `<div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>`
   },
   'fn-coords': {
     label: 'to_coordinates', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['places_text'], out: ['coordinates'] },
-    body: (n) => `
-      <label style="font-size:9px;color:var(--text-dim)">places_text: comma-separated</label>
-      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
-    `
+    body: (n) => `<label style="font-size:9px;color:var(--text-dim)">comma-separated</label>
+      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>`
   },
   'fn-asktext': {
     label: 'ask_text', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['context','query'], out: ['answer'] },
-    body: (n) => `
-      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
-    `
+    body: (n) => `<div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>`
   },
   'fn-concat': {
     label: 'concat_text', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['text_a','text_b'], out: ['result'] },
-    body: (n) => `
-      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
-    `
+    body: (n) => `<div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>`
   },
   'fn-if': {
     label: 'if', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['condition','text'], out: ['result'] },
-    body: (n) => `
-      <label style="font-size:9px;color:var(--text-dim)">condition accepts true/false, 1/0, yes/no</label>
-      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
-    `
+    body: (n) => `<label style="font-size:9px;color:var(--text-dim)">true/false, 1/0, yes/no</label>
+      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>`
   },
   'fn-string-match': {
     label: 'string_match', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['text_a','text_b'], out: ['match'] },
-    body: (n) => `
-      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
-    `
+    body: (n) => `<div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>`
   },
   'fn-sum': {
     label: 'sum', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['value'], out: ['result'] },
-    body: (n) => `
-      <label style="font-size:9px;color:var(--text-dim)">Connect any number of inputs to value</label>
-      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
-    `
+    body: (n) => `<label style="font-size:9px;color:var(--text-dim)">Connect multiple inputs</label>
+      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>`
   },
   'fn-dominant-color': {
     label: 'dominant_color', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['image_b64'], out: ['hex','rgb'] },
-    body: (n) => `
-      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
-    `
+    body: (n) => `<div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>`
   },
   'fn-color-similarity': {
     label: 'color_similarity', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['color_a','color_b'], out: ['similarity','distance','rgb_a','rgb_b'] },
-    body: (n) => `
-      <label style="font-size:9px;color:var(--text-dim)">Use #RRGGBB, color names, rgb(r,g,b), or r,g,b</label>
-      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
-    `
+    body: (n) => `<label style="font-size:9px;color:var(--text-dim)">#RRGGBB, name, rgb(r,g,b)</label>
+      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>`
   },
   'output': {
     label: 'Output', tag: 'output', typeClass: 'type-output',
     ports: { in: ['value'] },
     body: (n) => {
       const v = n.data.value;
-      if (!v) return `<div class="output-val">—</div>`;
+      if (!v) return '<div class="output-val">&#8212;</div>';
       if (typeof v === 'string' && v.length > 20 && isBase64(v))
         return `<img class="img-preview" src="data:image/png;base64,${v}">`;
       return `<div class="output-val">${typeof v === 'object' ? JSON.stringify(v,null,2) : String(v)}</div>`;
@@ -394,26 +401,21 @@ const NODE_DEFS = {
   }
 };
 
-function isBase64(s) {
-  return /^[A-Za-z0-9+/]+=*$/.test(s.replace(/\s/g,''));
-}
+function isBase64(s) { return /^[A-Za-z0-9+/]+=*$/.test(s.replace(/\s/g,'')); }
 
-// ─── Add node ─────────────────────────────────────────────────────────
+// ─── Add / render nodes ───────────────────────────────────────────────
 function addNode(type, x, y) {
-  const id = 'n' + (++nodeCount);
+  const id  = 'n' + (++nodeCount);
   x = x ?? 80 + Math.random()*300;
   y = y ?? 80 + Math.random()*200;
-
   const def = NODE_DEFS[type];
-  const el = document.createElement('div');
-  el.className = `node ${def.typeClass}`;
+  const el  = document.createElement('div');
+  el.className = 'node ' + def.typeClass;
   el.id = id;
   el.style.left = x + 'px';
   el.style.top  = y + 'px';
-
   const n = { id, type, el, x, y, ports: {}, data: {} };
   nodes[id] = n;
-
   renderNode(n);
   canvas.appendChild(el);
   makeDraggable(el, n);
@@ -422,35 +424,38 @@ function addNode(type, x, y) {
 
 function renderNode(n) {
   const def = NODE_DEFS[n.type];
+  if (!def) return;
   const ins  = def.ports.in  || [];
   const outs = def.ports.out || [];
 
-  const inHTML = ins.map(p => `
-    <div class="port-label input-port">
+  const inHTML = ins.map(p =>
+    `<div class="port-label input-port">
       <div class="port in" data-nid="${n.id}" data-port="${p}" data-dir="in"></div>
       <span>${p}</span>
     </div>`).join('');
 
-  const outHTML = outs.map(p => `
-    <div class="port-label output-port">
+  const outHTML = outs.map(p =>
+    `<div class="port-label output-port">
       <span>${p}</span>
       <div class="port out" data-nid="${n.id}" data-port="${p}" data-dir="out"></div>
     </div>`).join('');
 
-  n.el.innerHTML = `
-    <div class="node-header">
+  const x2 = def._isCustom
+    ? `<button class="btn-x2" onclick="event.stopPropagation();duplicateCustomNode('${n.id}')">x2</button>` : '';
+
+  n.el.innerHTML =
+    `<div class="node-header">
       <span>${def.label}</span>
+      ${x2}
       <span class="tag">${def.tag}</span>
-      <span class="node-del" onclick="deleteNode('${n.id}')">✕</span>
+      <span class="node-del" onclick="deleteNode('${n.id}')">&#10005;</span>
     </div>
     <div class="ports-row" style="padding:8px 10px 0">
       <div class="port-group left">${inHTML}</div>
       <div class="port-group right">${outHTML}</div>
     </div>
-    <div class="node-body">${def.body(n)}</div>
-  `;
+    <div class="node-body">${def.body(n)}</div>`;
 
-  // Register ports
   n.el.querySelectorAll('.port').forEach(pel => {
     const pname = pel.dataset.port;
     const dir   = pel.dataset.dir;
@@ -460,42 +465,30 @@ function renderNode(n) {
   });
 }
 
-function nodeData(nid, key, val) {
-  nodes[nid].data[key] = val;
-}
+function nodeData(nid, key, val) { nodes[nid].data[key] = val; }
 
 // ─── Drag nodes ───────────────────────────────────────────────────────
 function makeDraggable(el, n) {
   el.addEventListener('mousedown', e => {
-    if (e.target.closest('.port') || e.target.closest('.node-del') ||
-        e.target.tagName==='TEXTAREA' || e.target.tagName==='INPUT' ||
-        e.target.tagName==='BUTTON' || e.target.tagName==='SELECT') return;
+    if (e.target.closest('.port,.node-del,.btn,.btn-x2') ||
+        e.target.tagName==='TEXTAREA' || e.target.tagName==='INPUT' || e.target.tagName==='SELECT') return;
     e.preventDefault();
-    const startX = e.clientX - n.x;
-    const startY = e.clientY - n.y;
-    const move = ev => {
-      n.x = ev.clientX - startX;
-      n.y = ev.clientY - startY;
-      el.style.left = n.x + 'px';
-      el.style.top  = n.y + 'px';
-      redrawWires();
-    };
-    const up = () => {
-      window.removeEventListener('mousemove', move);
-      window.removeEventListener('mouseup', up);
-    };
-    window.addEventListener('mousemove', move);
+    const ox = e.clientX - n.x, oy = e.clientY - n.y;
+    const mv = ev => { n.x = ev.clientX-ox; n.y = ev.clientY-oy; el.style.left=n.x+'px'; el.style.top=n.y+'px'; redrawWires(); };
+    const up = () => { window.removeEventListener('mousemove',mv); window.removeEventListener('mouseup',up); };
+    window.addEventListener('mousemove', mv);
     window.addEventListener('mouseup', up);
   });
 }
 
 // ─── Wires ────────────────────────────────────────────────────────────
 function portCenter(nid, portName) {
-  const n   = nodes[nid];
-  const p   = n.ports[portName];
-  if (!p) return {x:0,y:0};
-  const pr  = p.el.getBoundingClientRect();
-  const wr  = canvasWrap.getBoundingClientRect();
+  const n = nodes[nid];
+  if (!n) return {x:0,y:0};
+  const p = n.ports[portName];
+  if (!p || !p.el) return {x:0,y:0};
+  const pr = p.el.getBoundingClientRect();
+  const wr = canvasWrap.getBoundingClientRect();
   return { x: pr.left - wr.left + pr.width/2, y: pr.top - wr.top + pr.height/2 };
 }
 
@@ -505,11 +498,11 @@ function drawCurve(x1,y1,x2,y2) {
 }
 
 function redrawWires() {
-  // Remove old wire elements
   svgLayer.querySelectorAll('.wire').forEach(e=>e.remove());
   wires.forEach(w => {
     const a = portCenter(w.from.nid, w.from.port);
     const b = portCenter(w.to.nid,   w.to.port);
+    if (!a || !b) return;
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('class','wire');
     path.setAttribute('d', drawCurve(a.x,a.y,b.x,b.y));
@@ -518,30 +511,24 @@ function redrawWires() {
   });
 }
 
-function deleteWire(w) {
-  wires = wires.filter(x => x !== w);
-  redrawWires();
-  updatePortConnected();
-}
+function deleteWire(w) { wires = wires.filter(x=>x!==w); redrawWires(); updatePortConnected(); }
 
 function updatePortConnected() {
-  // Reset all
-  Object.values(nodes).forEach(n =>
-    Object.values(n.ports).forEach(p => p.el.classList.remove('connected'))
-  );
+  Object.values(nodes).forEach(n => Object.values(n.ports).forEach(p => p.el && p.el.classList.remove('connected')));
   wires.forEach(w => {
     const a = nodes[w.from.nid]?.ports[w.from.port];
     const b = nodes[w.to.nid]?.ports[w.to.port];
-    if (a) a.el.classList.add('connected');
-    if (b) b.el.classList.add('connected');
+    if (a?.el) a.el.classList.add('connected');
+    if (b?.el) b.el.classList.add('connected');
   });
 }
 
-// ─── Port drag to connect ──────────────────────────────────────────────
+// ─── Port drag to connect ─────────────────────────────────────────────
 function onPortMouseDown(e) {
   e.stopPropagation();
   e.preventDefault();
   const info = portMap.get(e.currentTarget);
+  if (!info) return;
   draggingFrom = { ...info, el: e.currentTarget };
 
   previewLine = document.createElementNS('http://www.w3.org/2000/svg','path');
@@ -549,38 +536,36 @@ function onPortMouseDown(e) {
   svgLayer.appendChild(previewLine);
 
   const wr = canvasWrap.getBoundingClientRect();
+
   const move = ev => {
     const a = portCenter(draggingFrom.nid, draggingFrom.portName);
-    const bx = ev.clientX - wr.left;
-    const by = ev.clientY - wr.top;
-    previewLine.setAttribute('d', drawCurve(a.x,a.y,bx,by));
+    previewLine.setAttribute('d', drawCurve(a.x, a.y, ev.clientX - wr.left, ev.clientY - wr.top));
   };
+
   const up = ev => {
     window.removeEventListener('mousemove', move);
     window.removeEventListener('mouseup', up);
     previewLine.remove(); previewLine = null;
 
-    // Check if released on a port
-    const target = document.elementFromPoint(ev.clientX, ev.clientY);
-    if (target && target.classList.contains('port')) {
-      const info2 = portMap.get(target);
+    // Hit-test: look for .port or .fc-port under cursor
+    const els = document.elementsFromPoint(ev.clientX, ev.clientY);
+    const portEl = els.find(el => el.classList.contains('port') || el.classList.contains('fc-port'));
+
+    if (portEl && portEl !== draggingFrom.el) {
+      const info2 = portMap.get(portEl);
       if (info2 && info2.nid !== draggingFrom.nid) {
-        // Ensure one is in and one is out
         let from, to;
-        if (draggingFrom.dir === 'out' && info2.dir === 'in') {
+        if (draggingFrom.dir==='out' && info2.dir==='in') {
           from = { nid: draggingFrom.nid, port: draggingFrom.portName };
           to   = { nid: info2.nid,        port: info2.portName };
-        } else if (draggingFrom.dir === 'in' && info2.dir === 'out') {
+        } else if (draggingFrom.dir==='in' && info2.dir==='out') {
           from = { nid: info2.nid,        port: info2.portName };
           to   = { nid: draggingFrom.nid, port: draggingFrom.portName };
         }
         if (from && to) {
-          // Most nodes allow only one wire per input. sum:value accepts many.
           const targetNode = nodes[to.nid];
-          const allowsManyInputs = targetNode?.type === 'fn-sum' && to.port === 'value';
-          if (!allowsManyInputs) {
-            wires = wires.filter(w => !(w.to.nid===to.nid && w.to.port===to.port));
-          }
+          const allowsMany = targetNode?.type === 'fn-sum' && to.port === 'value';
+          if (!allowsMany) wires = wires.filter(w => !(w.to.nid===to.nid && w.to.port===to.port));
           wires.push({ from, to });
           redrawWires();
           updatePortConnected();
@@ -589,6 +574,7 @@ function onPortMouseDown(e) {
     }
     draggingFrom = null;
   };
+
   window.addEventListener('mousemove', move);
   window.addEventListener('mouseup', up);
 }
@@ -604,19 +590,10 @@ document.getElementById('file-input').addEventListener('change', e => {
     img.onload = () => {
       const c = document.createElement('canvas');
       c.width = c.height = 512;
-      const ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0, 512, 512);
-      const b64 = c.toDataURL('image/png').split(',')[1];
-      nodes[pendingImageNode].data.image_b64 = b64;
+      c.getContext('2d').drawImage(img, 0, 0, 512, 512);
+      nodes[pendingImageNode].data.image_b64 = c.toDataURL('image/png').split(',')[1];
       renderNode(nodes[pendingImageNode]);
-      // Re-register ports after re-render
-      nodes[pendingImageNode].el.querySelectorAll('.port').forEach(pel => {
-        const pname = pel.dataset.port;
-        const dir   = pel.dataset.dir;
-        nodes[pendingImageNode].ports[pname] = { el: pel, dir };
-        portMap.set(pel, { nid: pendingImageNode, portName: pname, dir });
-        pel.addEventListener('mousedown', onPortMouseDown);
-      });
+      reRegisterPorts(nodes[pendingImageNode]);
       redrawWires();
     };
     img.src = ev.target.result;
@@ -624,67 +601,62 @@ document.getElementById('file-input').addEventListener('change', e => {
   reader.readAsDataURL(file);
   e.target.value = '';
 });
-
-function pickImage(nid) {
-  pendingImageNode = nid;
-  document.getElementById('file-input').click();
-}
+function pickImage(nid) { pendingImageNode = nid; document.getElementById('file-input').click(); }
 
 // ─── Delete node ──────────────────────────────────────────────────────
 function deleteNode(nid) {
-  wires = wires.filter(w => w.from.nid !== nid && w.to.nid !== nid);
+  wires = wires.filter(w => w.from.nid!==nid && w.to.nid!==nid);
   nodes[nid].el.remove();
   delete nodes[nid];
   redrawWires();
 }
 
-// ─── Resolve wire value ───────────────────────────────────────────────
+// ─── Resolve values ───────────────────────────────────────────────────
 function resolveInput(nid, portName) {
-  // Find wire going into nid:portName
-  const w = wires.find(x => x.to.nid === nid && x.to.port === portName);
+  const n = nodes[nid];
+  if (n?.data?._injected?.[portName] !== undefined) return n.data._injected[portName];
+  const w = wires.find(x => x.to.nid===nid && x.to.port===portName);
   if (!w) return undefined;
   return resolveOutput(w.from.nid, w.from.port);
 }
 
 function resolveInputs(nid, portName) {
   return wires
-    .filter(x => x.to.nid === nid && x.to.port === portName)
+    .filter(x => x.to.nid===nid && x.to.port===portName)
     .map(w => resolveOutput(w.from.nid, w.from.port));
 }
 
 function resolveOutput(nid, portName) {
   const n = nodes[nid];
-  // For input nodes, return their data
+  if (!n) return undefined;
   if (n.type === 'text-input')  return n.data.text || '';
   if (n.type === 'image-input') return n.data.image_b64 || null;
-  // For fn nodes, return cached output
   return n.data._out?.[portName];
 }
 
 // ─── Run pipeline ─────────────────────────────────────────────────────
+const BUILTIN_FN_TYPES = [
+  'fn-detect','fn-vlm','fn-ner','fn-coords','fn-asktext',
+  'fn-concat','fn-if','fn-string-match','fn-sum','fn-dominant-color','fn-color-similarity'
+];
+
 async function runAll() {
-  // Topological: just run fn nodes in creation order (simple, works for DAGs)
-const order = Object.values(nodes).filter(n =>
-  ['fn-detect','fn-vlm','fn-ner','fn-coords','fn-asktext','fn-concat','fn-if','fn-string-match','fn-sum','fn-dominant-color','fn-color-similarity'].includes(n.type)
-  );
-
-  for (const n of order) {
+  for (const n of Object.values(nodes).filter(n => BUILTIN_FN_TYPES.includes(n.type)))
     await runNode(n);
-  }
 
-  // Update output nodes
-  Object.values(nodes).filter(n => n.type === 'output').forEach(n => {
-    const val = resolveInput(n.id, 'value');
-    n.data.value = val;
+  for (const n of Object.values(nodes).filter(n => n.type.startsWith('custom-') && NODE_DEFS[n.type]))
+    await runCustomNode(n);
+
+  for (const n of Object.values(nodes).filter(n => n.type==='output')) {
+    n.data.value = resolveInput(n.id, 'value');
     renderNode(n);
     reRegisterPorts(n);
-  });
-
+  }
   redrawWires();
 }
 
 async function runNode(n) {
-  setStatus(n, '', 'running…');
+  setStatus(n, '', 'running...');
   try {
     if (n.type === 'fn-detect') {
       const obj = resolveInput(n.id,'object_name');
@@ -693,110 +665,69 @@ async function runNode(n) {
       const res = await apiFetch('/detect_object/', { object_name: obj||'object', image_base64: img });
       n.data._out = { detected: res.detected, confidence: res.confidence, cropped_image: res.image_base64 };
       setStatus(n, 'ok', `detected:${res.detected} conf:${res.confidence?.toFixed(2)??'-'}`);
-    }
-    else if (n.type === 'fn-vlm') {
+    } else if (n.type === 'fn-vlm') {
       const img = resolveInput(n.id,'image_b64');
       const q   = resolveInput(n.id,'question');
       if (!img) throw new Error('no image');
-      const res = await apiFetch('/ask_image/', {
-        image_base64: img,
-        question: q||'What is in this image?',
-        ip_address: '158.109.8.133:7000',
-        model_name: 'mistralai/Pixtral-12B-2409'
-      });
+      const res = await apiFetch('/ask_image/', { image_base64: img, question: q||'What is in this image?',
+        ip_address: '158.109.8.133:7000', model_name: 'mistralai/Pixtral-12B-2409' });
       n.data._out = { answer: res.answer };
-      setStatus(n, 'ok', res.answer?.slice(0,60)+'…');
-    }
-    else if (n.type === 'fn-ner') {
-      const text = resolveInput(n.id,'text');
-      const etype= resolveInput(n.id,'entity_type');
+      setStatus(n, 'ok', (res.answer||'').slice(0,60)+'...');
+    } else if (n.type === 'fn-ner') {
+      const text  = resolveInput(n.id,'text');
+      const etype = resolveInput(n.id,'entity_type');
       if (!text) throw new Error('no text');
       const res = await apiFetch('/extract_entities/', { text, entity_type: etype||'ORG' });
       n.data._out = { entities: res.entities };
       setStatus(n, 'ok', JSON.stringify(res.entities));
-    }
-    else if (n.type === 'fn-coords') {
+    } else if (n.type === 'fn-coords') {
       const raw = resolveInput(n.id,'places_text');
       if (!raw) throw new Error('no places');
-      const places = raw.split(',').map(s=>s.trim()).filter(Boolean);
-      const res = await apiFetch('/to_coordinates/', { places });
+      const res = await apiFetch('/to_coordinates/', { places: raw.split(',').map(s=>s.trim()).filter(Boolean) });
       n.data._out = { coordinates: res.results };
       setStatus(n, 'ok', `${res.results?.length} places resolved`);
-    }
-   else if (n.type === 'fn-asktext') {
+    } else if (n.type === 'fn-asktext') {
       const context = resolveInput(n.id,'context');
       const query   = resolveInput(n.id,'query');
       if (!query) throw new Error('no query');
-      const res = await apiFetch('/ask_text/', {
-        context: context || '',
-        query,
-        ip_address: '158.109.8.133:7000',
-        model_name: 'mistralai/Pixtral-12B-2409'
-      });
+      const res = await apiFetch('/ask_text/', { context: context||'', query,
+        ip_address: '158.109.8.133:7000', model_name: 'mistralai/Pixtral-12B-2409' });
       n.data._out = { answer: res.answer };
-      setStatus(n, 'ok', res.answer?.slice(0,60)+'…');
-    }
-    else if (n.type === 'fn-concat') {
-      const text_a = resolveInput(n.id,'text_a');
-      const text_b = resolveInput(n.id,'text_b');
-      const res = await apiFetch('/concat_text/', {
-        text_a: text_a || '',
-        text_b: text_b || ''
-      });
+      setStatus(n, 'ok', (res.answer||'').slice(0,60)+'...');
+    } else if (n.type === 'fn-concat') {
+      const ta = resolveInput(n.id,'text_a'), tb = resolveInput(n.id,'text_b');
+      const res = await apiFetch('/concat_text/', { text_a: ta||'', text_b: tb||'' });
       n.data._out = { result: res.result };
-      setStatus(n, 'ok', res.result?.slice(0,60));
-    }
-    else if (n.type === 'fn-if') {
-      const conditionRaw = resolveInput(n.id,'condition');
+      setStatus(n, 'ok', (res.result||'').slice(0,60));
+    } else if (n.type === 'fn-if') {
+      const raw  = resolveInput(n.id,'condition');
       const text = resolveInput(n.id,'text');
-
-      const normalized = typeof conditionRaw === 'string' ? conditionRaw.trim().toLowerCase() : conditionRaw;
-      const isTrue = normalized === true || normalized === 1 || normalized === '1' || normalized === 'true' || normalized === 'yes';
-      const result = isTrue ? String(text ?? '') : '';
-
-      n.data._out = { result };
-      setStatus(n, 'ok', isTrue ? 'condition=true -> text' : 'condition=false -> empty');
-    }
-    else if (n.type === 'fn-string-match') {
-      const textA = resolveInput(n.id,'text_a');
-      const textB = resolveInput(n.id,'text_b');
-
-      const match = String(textA ?? '') === String(textB ?? '');
-
+      const norm = typeof raw==='string' ? raw.trim().toLowerCase() : raw;
+      const yes  = norm===true||norm===1||norm==='1'||norm==='true'||norm==='yes';
+      n.data._out = { result: yes ? String(text??'') : '' };
+      setStatus(n, 'ok', yes ? 'true -> text' : 'false -> empty');
+    } else if (n.type === 'fn-string-match') {
+      const a = resolveInput(n.id,'text_a'), b = resolveInput(n.id,'text_b');
+      const match = String(a??'')=== String(b??'');
       n.data._out = { match };
       setStatus(n, 'ok', match ? 'true' : 'false');
-    }
-    else if (n.type === 'fn-sum') {
-      const values = resolveInputs(n.id,'value');
-      if (!values.length) throw new Error('no inputs');
-
-      let sum = 0;
-      for (const v of values) {
-        const num = Number(v);
-        sum += Number.isNaN(num) ? 0 : num;
-      }
-
+    } else if (n.type === 'fn-sum') {
+      const vals = resolveInputs(n.id,'value');
+      if (!vals.length) throw new Error('no inputs');
+      const sum = vals.reduce((acc,v)=>{ const num=Number(v); return acc+(isNaN(num)?0:num); },0);
       n.data._out = { result: String(sum) };
-      setStatus(n, 'ok', `sum:${sum}`);
-    }
-    else if (n.type === 'fn-dominant-color') {
+      setStatus(n, 'ok', 'sum:'+sum);
+    } else if (n.type === 'fn-dominant-color') {
       const img = resolveInput(n.id,'image_b64');
       if (!img) throw new Error('no image');
       const res = await apiFetch('/dominant_color/', { image_base64: img, k: 5 });
       n.data._out = { hex: res.hex, rgb: res.rgb };
-      setStatus(n, 'ok', `${res.hex} (${res.rgb.join(',')})`);
-    }
-    else if (n.type === 'fn-color-similarity') {
-      const color_a = resolveInput(n.id,'color_a');
-      const color_b = resolveInput(n.id,'color_b');
-      if (!color_a || !color_b) throw new Error('need both colors');
-      const res = await apiFetch('/color_similarity/', { color_a, color_b });
-      n.data._out = {
-        similarity: res.similarity,
-        distance: res.distance,
-        rgb_a: res.rgb_a,
-        rgb_b: res.rgb_b
-      };
+      setStatus(n, 'ok', `${res.hex} (${res.rgb?.join(',')})`);
+    } else if (n.type === 'fn-color-similarity') {
+      const ca = resolveInput(n.id,'color_a'), cb = resolveInput(n.id,'color_b');
+      if (!ca||!cb) throw new Error('need both colors');
+      const res = await apiFetch('/color_similarity/', { color_a: ca, color_b: cb });
+      n.data._out = { similarity: res.similarity, distance: res.distance, rgb_a: res.rgb_a, rgb_b: res.rgb_b };
       setStatus(n, 'ok', `sim:${res.similarity} dist:${res.distance}`);
     }
   } catch(err) {
@@ -806,47 +737,59 @@ async function runNode(n) {
   reRegisterPorts(n);
 }
 
-function setStatus(n, cls, msg) {
-  n.data._status = cls;
-  n.data._msg    = msg;
+async function runCustomNode(n) {
+  const def = NODE_DEFS[n.type];
+  if (!def?._isCustom) return;
+  const fn = customFunctions[def._fnName];
+  if (!fn) return;
+  setStatus(n, '', 'running...');
+
+  fn.inputBindings.forEach(b => {
+    const val = resolveInput(n.id, b.portName);
+    b.wires.forEach(w => {
+      const tgt = nodes[w.to.nid];
+      if (!tgt) return;
+      if (!tgt.data._injected) tgt.data._injected = {};
+      tgt.data._injected[w.to.port] = val;
+    });
+  });
+
+  const captured = fn.capturedNodeIds.map(id=>nodes[id]).filter(cn=>cn&&BUILTIN_FN_TYPES.includes(cn.type));
+  for (const cn of captured) await runNode(cn);
+
+  n.data._out = {};
+  fn.outputBindings.forEach(b => {
+    if (!b.wire) return;
+    n.data._out[b.portName] = nodes[b.wire.from.nid]?.data?._out?.[b.wire.from.port];
+  });
+  setStatus(n, 'ok', 'done');
+  renderNode(n);
+  reRegisterPorts(n);
 }
+
+function setStatus(n, cls, msg) { n.data._status = cls; n.data._msg = msg; }
 
 async function apiFetch(path, body) {
   const r = await fetch(API + path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
   });
   if (!r.ok) {
     let detail = '';
     try {
-      const data = await r.json();
-      if (typeof data?.detail === 'string') {
-        detail = data.detail;
-      } else if (Array.isArray(data?.detail)) {
-        detail = data.detail.map(d => d?.msg || JSON.stringify(d)).join('; ');
-      } else if (data && typeof data === 'object') {
-        detail = JSON.stringify(data);
-      }
-    } catch (_) {
-      // Ignore parse errors; fallback to status text below.
-    }
-
-    if (!detail) detail = r.statusText || 'Request failed';
-
-
-    if (r.status === 422) {
-      throw new Error(`Invalid input for ${path}: ${detail}`);
-    }
-    throw new Error(`Request failed (${r.status}) on ${path}: ${detail}`);
+      const d = await r.json();
+      if (typeof d?.detail==='string') detail=d.detail;
+      else if (Array.isArray(d?.detail)) detail=d.detail.map(x=>x?.msg||JSON.stringify(x)).join('; ');
+      else if (d) detail=JSON.stringify(d);
+    } catch(_){}
+    detail = detail || r.statusText || 'failed';
+    throw new Error(r.status===422 ? `Invalid input: ${detail}` : `HTTP ${r.status}: ${detail}`);
   }
   return r.json();
 }
 
 function reRegisterPorts(n) {
   n.el.querySelectorAll('.port').forEach(pel => {
-    const pname = pel.dataset.port;
-    const dir   = pel.dataset.dir;
+    const pname = pel.dataset.port, dir = pel.dataset.dir;
     n.ports[pname] = { el: pel, dir };
     portMap.set(pel, { nid: n.id, portName: pname, dir });
     pel.addEventListener('mousedown', onPortMouseDown);
@@ -855,16 +798,219 @@ function reRegisterPorts(n) {
 }
 
 function clearAll() {
-  Object.keys(nodes).forEach(nid => nodes[nid].el.remove());
-  nodes = {};
-  wires = [];
+  Object.keys(nodes).forEach(nid => nodes[nid].el?.remove());
+  nodes = {}; wires = [];
   svgLayer.querySelectorAll('.wire').forEach(e=>e.remove());
+  document.querySelectorAll('.fn-creator').forEach(e=>e.remove());
+  Object.keys(fnCreatorState).forEach(k => delete fnCreatorState[k]);
 }
 
-// Keep SVG sized to canvas-wrap
+function duplicateCustomNode(nid) {
+  const n = nodes[nid];
+  if (n) addNode(n.type, n.x+30, n.y+30);
+}
+
+// ─── Create Function ──────────────────────────────────────────────────
+const customFunctions = {};
+const fnCreatorState  = {};
+let fnCreatorCount = 0;
+
+function addFnCreator() {
+  const fcId = 'fc' + (++fnCreatorCount);
+  const x = 120 + Math.random()*150;
+  const y = 120 + Math.random()*120;
+  const state = {
+    id: fcId, x, y, w: 360, h: 260,
+    nameVal: 'func-' + fnCreatorCount,
+    inputPorts: [], outputPorts: [],
+    inputCount: 0, outputCount: 0,
+    el: null
+  };
+  fnCreatorState[fcId] = state;
+
+  const el = document.createElement('div');
+  el.className = 'fn-creator';
+  el.id = fcId;
+  setFcStyle(el, state);
+  canvas.appendChild(el);
+  state.el = el;
+
+  renderFnCreator(state);
+}
+
+function setFcStyle(el, s) {
+  el.style.left = s.x+'px'; el.style.top = s.y+'px';
+  el.style.width = s.w+'px'; el.style.height = s.h+'px';
+}
+
+function renderFnCreator(state) {
+  const fcId = state.id;
+  const el   = state.el;
+
+  const inRows = state.inputPorts.map(p =>
+    `<div class="fc-port-row input-side">
+      <div class="fc-port in" data-fcid="${fcId}" data-fcport="${p.name}" data-side="in" data-dir="out"></div>
+      <span>${p.name}</span>
+    </div>`).join('');
+
+  const outRows = state.outputPorts.map(p =>
+    `<div class="fc-port-row output-side">
+      <span>${p.name}</span>
+      <div class="fc-port out" data-fcid="${fcId}" data-fcport="${p.name}" data-side="out" data-dir="in"></div>
+    </div>`).join('');
+
+  el.innerHTML =
+    `<div class="fn-creator-header">
+      <button class="fn-creator-define-btn" onclick="defineFnCreator('${fcId}')">&#11041; Define</button>
+      <input type="text" value="${state.nameVal}" placeholder="func-name"
+             oninput="fnCreatorState['${fcId}'].nameVal=this.value">
+      <span class="node-del" onclick="removeFnCreator('${fcId}')">&#10005;</span>
+    </div>
+    <div class="fn-creator-body">
+      <div class="fn-creator-ports">
+        ${inRows}
+        <button class="fn-creator-add-btn" onclick="fcAddPort('${fcId}','in')">+</button>
+      </div>
+      <div style="flex:1"></div>
+      <div class="fn-creator-ports" style="align-items:flex-end">
+        ${outRows}
+        <button class="fn-creator-add-btn" onclick="fcAddPort('${fcId}','out')">+</button>
+      </div>
+    </div>
+    <div class="fn-creator-resize">&#10511;</div>`;
+
+  // Register fc-port elements in portMap using proxy node entries
+  el.querySelectorAll('.fc-port').forEach(pel => {
+    const dir   = pel.dataset.dir;
+    const side  = pel.dataset.side;
+    const pname = pel.dataset.fcport;
+    // proxyNid is used as the "node id" for portCenter() lookups
+    const proxyNid = `fcproxy-${fcId}-${side}-${pname}`;
+
+    // Ensure a proxy node entry exists pointing to this element
+    if (!nodes[proxyNid]) {
+      nodes[proxyNid] = {
+        id: proxyNid, type: 'fc-proxy', _isFcProxy: true,
+        el, ports: {}, data: {}, x: state.x, y: state.y
+      };
+    }
+    // The proxy node's port points directly to the DOM element
+    nodes[proxyNid].ports[pname] = { el: pel, dir };
+    portMap.set(pel, { nid: proxyNid, portName: pname, dir });
+    pel.addEventListener('mousedown', onPortMouseDown);
+  });
+
+  // Drag via header
+  const header = el.querySelector('.fn-creator-header');
+  header.addEventListener('mousedown', e => {
+    if (e.target.tagName==='INPUT' || e.target.tagName==='BUTTON' || e.target.classList.contains('node-del')) return;
+    e.preventDefault();
+    const ox = e.clientX - state.x, oy = e.clientY - state.y;
+    const mv = ev => { state.x=ev.clientX-ox; state.y=ev.clientY-oy; setFcStyle(el,state); redrawWires(); };
+    const up = () => { window.removeEventListener('mousemove',mv); window.removeEventListener('mouseup',up); };
+    window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
+  });
+
+  // Resize via handle
+  const rz = el.querySelector('.fn-creator-resize');
+  rz.addEventListener('mousedown', e => {
+    e.preventDefault(); e.stopPropagation();
+    const sw=state.w, sh=state.h, sx=e.clientX, sy=e.clientY;
+    const mv = ev => { state.w=Math.max(200,sw+ev.clientX-sx); state.h=Math.max(120,sh+ev.clientY-sy); setFcStyle(el,state); redrawWires(); };
+    const up = () => { window.removeEventListener('mousemove',mv); window.removeEventListener('mouseup',up); };
+    window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
+  });
+}
+
+function fcAddPort(fcId, dir) {
+  const s = fnCreatorState[fcId];
+  if (!s) return;
+  if (dir==='in') { s.inputCount++; s.inputPorts.push({ name: 'in'+s.inputCount }); }
+  else            { s.outputCount++; s.outputPorts.push({ name: 'out'+s.outputCount }); }
+  renderFnCreator(s);
+}
+
+function removeFnCreator(fcId) {
+  const s = fnCreatorState[fcId];
+  if (!s) return;
+  Object.keys(nodes).filter(nid=>nid.startsWith('fcproxy-'+fcId)).forEach(nid=>delete nodes[nid]);
+  wires = wires.filter(w=>!w.from.nid.startsWith('fcproxy-'+fcId)&&!w.to.nid.startsWith('fcproxy-'+fcId));
+  s.el.remove();
+  delete fnCreatorState[fcId];
+  redrawWires();
+}
+
+function defineFnCreator(fcId) {
+  const state = fnCreatorState[fcId];
+  if (!state) return;
+  const fnName = state.nameVal.trim() || ('func-'+fnCreatorCount);
+  const fcRect = { left:state.x, top:state.y, right:state.x+state.w, bottom:state.y+state.h };
+
+  // Nodes fully inside the box
+  const capturedNodeIds = Object.values(nodes)
+    .filter(n => !n._isFcProxy && isNodeInsideFcBox(n, fcRect))
+    .map(n => n.id);
+
+  // Input bindings: wire from proxy-in-port → inside node
+  const inputBindings = state.inputPorts.map(p => {
+    const proxyNid = `fcproxy-${fcId}-in-${p.name}`;
+    const w = wires.filter(x => x.from.nid===proxyNid && capturedNodeIds.includes(x.to.nid));
+    return { portName: p.name, wires: w };
+  });
+
+  // Output bindings: wire from inside node → proxy-out-port
+  const outputBindings = state.outputPorts.map(p => {
+    const proxyNid = `fcproxy-${fcId}-out-${p.name}`;
+    const w = wires.find(x => x.to.nid===proxyNid && capturedNodeIds.includes(x.from.nid));
+    return { portName: p.name, wire: w||null };
+  });
+
+  customFunctions[fnName] = {
+    name: fnName,
+    inputPorts:  state.inputPorts.map(p=>p.name),
+    outputPorts: state.outputPorts.map(p=>p.name),
+    capturedNodeIds: [...capturedNodeIds],
+    inputBindings, outputBindings
+  };
+
+  NODE_DEFS['custom-'+fnName] = {
+    label: fnName, tag: 'custom', typeClass: 'type-custom',
+    ports: { in: state.inputPorts.map(p=>p.name), out: state.outputPorts.map(p=>p.name) },
+    body: (n) => `<div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>`,
+    _isCustom: true, _fnName: fnName
+  };
+
+  addCustomFnToolbarButton(fnName);
+
+  capturedNodeIds.forEach(nid => { if (nodes[nid]) nodes[nid].el.style.display='none'; });
+
+  const cx = state.x + state.w/2 - 100;
+  const cy = state.y + state.h/2 - 40;
+  removeFnCreator(fcId);
+  addNode('custom-'+fnName, cx, cy);
+  redrawWires();
+}
+
+function isNodeInsideFcBox(n, r) {
+  const nw = n.el.offsetWidth||200, nh = n.el.offsetHeight||100;
+  return n.x>=r.left && (n.x+nw)<=r.right && n.y>=r.top && (n.y+nh)<=r.bottom;
+}
+
+function addCustomFnToolbarButton(fnName) {
+  if (document.getElementById('tb-btn-'+fnName)) return;
+  const btn = document.createElement('button');
+  btn.className = 'btn'; btn.id = 'tb-btn-'+fnName;
+  btn.style.cssText = 'border-color:#b84ff7;color:#b84ff7';
+  btn.textContent = '+ '+fnName;
+  btn.onclick = () => addNode('custom-'+fnName);
+  const toolbar = document.getElementById('toolbar');
+  toolbar.insertBefore(btn, toolbar.querySelector('[onclick="addFnCreator()"]'));
+}
+
+// ─── SVG sizing ───────────────────────────────────────────────────────
 function sizeSVG() {
   const r = canvasWrap.getBoundingClientRect();
-  svgLayer.setAttribute('width',  r.width);
+  svgLayer.setAttribute('width', r.width);
   svgLayer.setAttribute('height', r.height);
 }
 window.addEventListener('resize', () => { sizeSVG(); redrawWires(); });
