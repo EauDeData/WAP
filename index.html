@@ -57,6 +57,56 @@
   .btn.run:hover { background: var(--accent3); color: #111; }
   .btn.danger { border-color: var(--accent2); color: var(--accent2); }
 
+  /* ── Export / Import circle buttons ── */
+  .io-group {
+    margin-left: auto;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .io-btn {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    transition: border-color .15s, color .15s, background .15s, transform .1s;
+    position: relative;
+    line-height: 1;
+  }
+  .io-btn svg { width: 12px; height: 12px; pointer-events: none; }
+
+  .io-btn.export-btn { border-color: rgba(247,169,79,0.45); color: #f7a94f; }
+  .io-btn.export-btn:hover {
+    border-color: #f7a94f;
+    background: rgba(247,169,79,0.12);
+    transform: scale(1.1);
+  }
+  .io-btn.import-btn { border-color: rgba(79,142,247,0.45); color: var(--accent); }
+  .io-btn.import-btn:hover {
+    border-color: var(--accent);
+    background: rgba(79,142,247,0.12);
+    transform: scale(1.1);
+  }
+
+  /* tooltip */
+  .io-btn::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: -22px; left: 50%; transform: translateX(-50%);
+    font-size: 9px; font-family: 'Courier New', monospace;
+    background: var(--panel); border: 1px solid var(--border);
+    color: var(--text-dim); padding: 2px 5px; border-radius: 3px;
+    white-space: nowrap; pointer-events: none;
+    opacity: 0; transition: opacity .15s;
+    z-index: 100;
+  }
+  .io-btn:hover::after { opacity: 1; }
+
   #canvas-wrap { position: relative; flex: 1; overflow: hidden; }
   #svg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
   #canvas { position: absolute; inset: 0; z-index: 1; }
@@ -139,6 +189,7 @@
   .wire-preview { fill:none; stroke: var(--accent); stroke-width:1.5; stroke-dasharray:5,4; opacity:.5; }
 
   #file-input { display: none; }
+  #import-json-input { display: none; }
   .node-del { font-size: 10px; color: var(--text-dim); cursor: pointer; padding: 0 2px; line-height: 1; }
   .node-del:hover { color: var(--accent2); }
 
@@ -150,7 +201,6 @@
   }
   .btn-x2:hover { background: rgba(184,79,247,0.2); }
 
-  /* ── Create-Function box ── */
   .fn-creator {
     position: absolute;
     min-width: 260px;
@@ -205,7 +255,6 @@
     flex-direction: row;
     align-items: stretch;
     padding: 10px 0;
-    /* transparent to clicks so nodes inside are reachable */
     pointer-events: none;
   }
   .fn-creator-ports {
@@ -217,11 +266,7 @@
     justify-content: flex-start;
     min-width: 34px;
   }
-  .fc-port-row {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
+  .fc-port-row { display: flex; align-items: center; gap: 4px; }
   .fc-port-row.input-side  { margin-left: -12px; }
   .fc-port-row.output-side { margin-right: -12px; justify-content: flex-end; }
   .fc-port-row span { font-size: 9px; color: rgba(79,142,247,0.85); white-space: nowrap; }
@@ -266,6 +311,25 @@
     pointer-events: all;
   }
   .fn-creator-resize:hover { color: var(--accent); }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 18px; right: 18px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 7px 14px;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    color: var(--accent3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+    z-index: 9999;
+  }
+  #toast.show { opacity: 1; }
+  #toast.err  { color: var(--accent2); border-color: rgba(247,79,122,0.4); }
 </style>
 </head>
 <body>
@@ -289,7 +353,25 @@
   <button class="btn" style="border-color:#b84ff7;color:#b84ff7" onclick="addFnCreator()">⬡ Create Function</button>
   <button class="btn run" onclick="runAll()">&#9654; Run All</button>
   <button class="btn danger" onclick="clearAll()">&#10005; Clear</button>
-  <span style="margin-left:auto;color:var(--text-dim);font-size:10px">drag nodes · drag port→port to connect · click wire to delete</span>
+  <span style="color:var(--text-dim);font-size:10px">drag nodes · drag port→port to connect · click wire to delete</span>
+
+  <!-- Export / Import circles — pushed to far right -->
+  <div class="io-group">
+    <button class="io-btn export-btn" data-tip="export JSON" onclick="exportJSON()">
+      <!-- upload arrow -->
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 8V2M3.5 4.5L6 2l2.5 2.5"/>
+        <path d="M2 9.5h8"/>
+      </svg>
+    </button>
+    <button class="io-btn import-btn" data-tip="import JSON" onclick="document.getElementById('import-json-input').click()">
+      <!-- download arrow -->
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2v6M3.5 5.5L6 8l2.5-2.5"/>
+        <path d="M2 9.5h8"/>
+      </svg>
+    </button>
+  </div>
 </div>
 
 <div id="canvas-wrap">
@@ -298,6 +380,9 @@
 </div>
 
 <input type="file" id="file-input" accept="image/*">
+<input type="file" id="import-json-input" accept=".json,application/json">
+
+<div id="toast"></div>
 
 <script>
 // ─── State ────────────────────────────────────────────────────────────
@@ -419,6 +504,26 @@ function addNode(type, x, y) {
   renderNode(n);
   canvas.appendChild(el);
   makeDraggable(el, n);
+  return n;
+}
+
+// Restore a node from saved state (preserves id and data)
+function restoreNode(type, x, y, savedId, savedData) {
+  const def = NODE_DEFS[type];
+  if (!def) return null;
+  const el = document.createElement('div');
+  el.className = 'node ' + def.typeClass;
+  el.id = savedId;
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+  const n = { id: savedId, type, el, x, y, ports: {}, data: { ...(savedData || {}) } };
+  nodes[savedId] = n;
+  renderNode(n);
+  canvas.appendChild(el);
+  makeDraggable(el, n);
+  // Keep nodeCount ahead of all restored ids
+  const num = parseInt(savedId.replace(/\D+/g, ''), 10);
+  if (!isNaN(num) && num >= nodeCount) nodeCount = num + 1;
   return n;
 }
 
@@ -547,7 +652,6 @@ function onPortMouseDown(e) {
     window.removeEventListener('mouseup', up);
     previewLine.remove(); previewLine = null;
 
-    // Hit-test: look for .port or .fc-port under cursor
     const els = document.elementsFromPoint(ev.clientX, ev.clientY);
     const portEl = els.find(el => el.classList.contains('port') || el.classList.contains('fc-port'));
 
@@ -810,6 +914,102 @@ function duplicateCustomNode(nid) {
   if (n) addNode(n.type, n.x+30, n.y+30);
 }
 
+// ─── Export JSON ──────────────────────────────────────────────────────
+function exportJSON() {
+  const nodesArr = Object.values(nodes)
+    .filter(n => !n._isFcProxy)
+    .map(n => ({
+      id:   n.id,
+      type: n.type,
+      x:    n.x,
+      y:    n.y,
+      data: serializeData(n.data)
+    }));
+
+  const payload = {
+    version: 1,
+    nodeCount,
+    nodes: nodesArr,
+    wires: wires.map(w => ({ from: { ...w.from }, to: { ...w.to } }))
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'node-graph-' + Date.now() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('exported ' + nodesArr.length + ' node' + (nodesArr.length !== 1 ? 's' : ''), false);
+}
+
+// Strip runtime keys (_out, _injected) — keep user-editable data
+function serializeData(data) {
+  const out = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (k === '_out' || k === '_injected') continue;
+    out[k] = v;
+  }
+  return out;
+}
+
+// ─── Import JSON ──────────────────────────────────────────────────────
+document.getElementById('import-json-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      importJSON(JSON.parse(ev.target.result));
+    } catch(err) {
+      showToast('import failed: ' + err.message, true);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+function importJSON(payload) {
+  if (!payload?.nodes || !Array.isArray(payload.nodes)) throw new Error('invalid format');
+
+  clearAll();
+
+  // Restore nodes with original ids and data
+  for (const sn of payload.nodes) {
+    if (!NODE_DEFS[sn.type]) { console.warn('unknown node type, skipping:', sn.type); continue; }
+    restoreNode(sn.type, sn.x ?? 80, sn.y ?? 80, sn.id, sn.data ?? {});
+  }
+
+  // Re-render so textarea/input values reflect restored data
+  Object.values(nodes).forEach(n => {
+    if (n._isFcProxy) return;
+    renderNode(n);
+    reRegisterPorts(n);
+  });
+
+  // Restore wires — skip if either endpoint is missing
+  for (const w of (payload.wires || [])) {
+    if (!nodes[w.from?.nid] || !nodes[w.to?.nid]) continue;
+    wires.push({ from: { ...w.from }, to: { ...w.to } });
+  }
+
+  if (payload.nodeCount && payload.nodeCount > nodeCount) nodeCount = payload.nodeCount;
+
+  redrawWires();
+  updatePortConnected();
+  showToast('imported ' + payload.nodes.length + ' node' + (payload.nodes.length !== 1 ? 's' : ''), false);
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────
+let _toastTimer = null;
+function showToast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isErr ? ' err' : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { t.className = ''; }, 2400);
+}
+
 // ─── Create Function ──────────────────────────────────────────────────
 const customFunctions = {};
 const fnCreatorState  = {};
@@ -879,28 +1079,23 @@ function renderFnCreator(state) {
     </div>
     <div class="fn-creator-resize">&#10511;</div>`;
 
-  // Register fc-port elements in portMap using proxy node entries
   el.querySelectorAll('.fc-port').forEach(pel => {
     const dir   = pel.dataset.dir;
     const side  = pel.dataset.side;
     const pname = pel.dataset.fcport;
-    // proxyNid is used as the "node id" for portCenter() lookups
     const proxyNid = `fcproxy-${fcId}-${side}-${pname}`;
 
-    // Ensure a proxy node entry exists pointing to this element
     if (!nodes[proxyNid]) {
       nodes[proxyNid] = {
         id: proxyNid, type: 'fc-proxy', _isFcProxy: true,
         el, ports: {}, data: {}, x: state.x, y: state.y
       };
     }
-    // The proxy node's port points directly to the DOM element
     nodes[proxyNid].ports[pname] = { el: pel, dir };
     portMap.set(pel, { nid: proxyNid, portName: pname, dir });
     pel.addEventListener('mousedown', onPortMouseDown);
   });
 
-  // Drag via header
   const header = el.querySelector('.fn-creator-header');
   header.addEventListener('mousedown', e => {
     if (e.target.tagName==='INPUT' || e.target.tagName==='BUTTON' || e.target.classList.contains('node-del')) return;
@@ -911,7 +1106,6 @@ function renderFnCreator(state) {
     window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
   });
 
-  // Resize via handle
   const rz = el.querySelector('.fn-creator-resize');
   rz.addEventListener('mousedown', e => {
     e.preventDefault(); e.stopPropagation();
@@ -946,19 +1140,16 @@ function defineFnCreator(fcId) {
   const fnName = state.nameVal.trim() || ('func-'+fnCreatorCount);
   const fcRect = { left:state.x, top:state.y, right:state.x+state.w, bottom:state.y+state.h };
 
-  // Nodes fully inside the box
   const capturedNodeIds = Object.values(nodes)
     .filter(n => !n._isFcProxy && isNodeInsideFcBox(n, fcRect))
     .map(n => n.id);
 
-  // Input bindings: wire from proxy-in-port → inside node
   const inputBindings = state.inputPorts.map(p => {
     const proxyNid = `fcproxy-${fcId}-in-${p.name}`;
     const w = wires.filter(x => x.from.nid===proxyNid && capturedNodeIds.includes(x.to.nid));
     return { portName: p.name, wires: w };
   });
 
-  // Output bindings: wire from inside node → proxy-out-port
   const outputBindings = state.outputPorts.map(p => {
     const proxyNid = `fcproxy-${fcId}-out-${p.name}`;
     const w = wires.find(x => x.to.nid===proxyNid && capturedNodeIds.includes(x.from.nid));
