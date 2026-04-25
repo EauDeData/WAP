@@ -244,6 +244,9 @@
   <button class="btn" onclick="addNode('fn-coords')">+ to_coordinates</button>
   <button class="btn" onclick="addNode('fn-asktext')">+ ask_text</button>
   <button class="btn" onclick="addNode('fn-concat')">+ concat_text</button>
+  <button class="btn" onclick="addNode('fn-if')">+ if</button>
+  <button class="btn" onclick="addNode('fn-string-match')">+ string_match</button>
+  <button class="btn" onclick="addNode('fn-sum')">+ sum</button>
   <button class="btn" onclick="addNode('fn-dominant-color')">+ dominant_color</button>
   <button class="btn" onclick="addNode('fn-color-similarity')">+ color_similarity</button>
   <button class="btn" onclick="addNode('output')">+ Output</button>
@@ -337,6 +340,29 @@ const NODE_DEFS = {
     label: 'concat_text', tag: 'fn', typeClass: 'type-fn',
     ports: { in: ['text_a','text_b'], out: ['result'] },
     body: (n) => `
+      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
+    `
+  },
+  'fn-if': {
+    label: 'if', tag: 'fn', typeClass: 'type-fn',
+    ports: { in: ['condition','text'], out: ['result'] },
+    body: (n) => `
+      <label style="font-size:9px;color:var(--text-dim)">condition accepts true/false, 1/0, yes/no</label>
+      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
+    `
+  },
+  'fn-string-match': {
+    label: 'string_match', tag: 'fn', typeClass: 'type-fn',
+    ports: { in: ['text_a','text_b'], out: ['match'] },
+    body: (n) => `
+      <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
+    `
+  },
+  'fn-sum': {
+    label: 'sum', tag: 'fn', typeClass: 'type-fn',
+    ports: { in: ['value'], out: ['result'] },
+    body: (n) => `
+      <label style="font-size:9px;color:var(--text-dim)">Connect any number of inputs to value</label>
       <div class="status ${n.data._status||''}">${n.data._msg||'idle'}</div>
     `
   },
@@ -549,8 +575,12 @@ function onPortMouseDown(e) {
           to   = { nid: draggingFrom.nid, port: draggingFrom.portName };
         }
         if (from && to) {
-          // Remove existing wire to same input port
-          wires = wires.filter(w => !(w.to.nid===to.nid && w.to.port===to.port));
+          // Most nodes allow only one wire per input. sum:value accepts many.
+          const targetNode = nodes[to.nid];
+          const allowsManyInputs = targetNode?.type === 'fn-sum' && to.port === 'value';
+          if (!allowsManyInputs) {
+            wires = wires.filter(w => !(w.to.nid===to.nid && w.to.port===to.port));
+          }
           wires.push({ from, to });
           redrawWires();
           updatePortConnected();
@@ -616,6 +646,12 @@ function resolveInput(nid, portName) {
   return resolveOutput(w.from.nid, w.from.port);
 }
 
+function resolveInputs(nid, portName) {
+  return wires
+    .filter(x => x.to.nid === nid && x.to.port === portName)
+    .map(w => resolveOutput(w.from.nid, w.from.port));
+}
+
 function resolveOutput(nid, portName) {
   const n = nodes[nid];
   // For input nodes, return their data
@@ -629,7 +665,7 @@ function resolveOutput(nid, portName) {
 async function runAll() {
   // Topological: just run fn nodes in creation order (simple, works for DAGs)
 const order = Object.values(nodes).filter(n =>
-    ['fn-detect','fn-vlm','fn-ner','fn-coords','fn-asktext','fn-concat','fn-dominant-color','fn-color-similarity'].includes(n.type)
+  ['fn-detect','fn-vlm','fn-ner','fn-coords','fn-asktext','fn-concat','fn-if','fn-string-match','fn-sum','fn-dominant-color','fn-color-similarity'].includes(n.type)
   );
 
   for (const n of order) {
@@ -709,6 +745,39 @@ async function runNode(n) {
       });
       n.data._out = { result: res.result };
       setStatus(n, 'ok', res.result?.slice(0,60));
+    }
+    else if (n.type === 'fn-if') {
+      const conditionRaw = resolveInput(n.id,'condition');
+      const text = resolveInput(n.id,'text');
+
+      const normalized = typeof conditionRaw === 'string' ? conditionRaw.trim().toLowerCase() : conditionRaw;
+      const isTrue = normalized === true || normalized === 1 || normalized === '1' || normalized === 'true' || normalized === 'yes';
+      const result = isTrue ? String(text ?? '') : '';
+
+      n.data._out = { result };
+      setStatus(n, 'ok', isTrue ? 'condition=true -> text' : 'condition=false -> empty');
+    }
+    else if (n.type === 'fn-string-match') {
+      const textA = resolveInput(n.id,'text_a');
+      const textB = resolveInput(n.id,'text_b');
+
+      const match = String(textA ?? '') === String(textB ?? '');
+
+      n.data._out = { match };
+      setStatus(n, 'ok', match ? 'true' : 'false');
+    }
+    else if (n.type === 'fn-sum') {
+      const values = resolveInputs(n.id,'value');
+      if (!values.length) throw new Error('no inputs');
+
+      let sum = 0;
+      for (const v of values) {
+        const num = Number(v);
+        sum += Number.isNaN(num) ? 0 : num;
+      }
+
+      n.data._out = { result: String(sum) };
+      setStatus(n, 'ok', `sum:${sum}`);
     }
     else if (n.type === 'fn-dominant-color') {
       const img = resolveInput(n.id,'image_b64');
