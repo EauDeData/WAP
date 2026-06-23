@@ -1,5 +1,5 @@
 The "Say My Name, Don't Make Money, Pass It On" License (SMNMPI) v1.0
-Copyright (c) [YEAR] [YOUR NAME]
+Copyright (c) 2026 Adri Molina Rodríguez
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to use,
@@ -12,7 +12,7 @@ SECTION 1 – ATTRIBUTION (You MUST say my name)
 
 All copies, distributions, or public uses of the Software, in original or
 modified form, must include clear and visible credit to the original author,
-[YOUR NAME], in all of the following:
+Adri Molina Rodríguez, in all of the following:
 
   a) Source code (e.g., in file headers, README, or comments);
   b) Documentation, if any;
@@ -97,10 +97,4 @@ SOFTWARE.
 
 The Greek Goddess Clause, however, is spiritually binding.
 
-────────────────────────────────────────────────────────────────────────────────
 
-To use this license in your project:
-  1. Replace [YEAR] with the current year.
-  2. Replace [YOUR NAME] with your actual name.
-  3. Add your Bizum number or a contact method for Section 4 purposes.
-  4. Place this file as LICENSE or LICENSE.txt in the root of your repository.
