@@ -775,7 +775,7 @@ async function runNode(n) {
       const q   = resolveInput(n.id,'question');
       if (!img) throw new Error('no image');
       const res = await apiFetch('/ask_image/', { image_base64: img, question: q||'What is in this image?',
-        ip_address: '158.109.8.133:7000', model_name: 'mistralai/Pixtral-12B-2409' });
+        ip_address: '158.109.8.123:7000', model_name: 'mistralai/Pixtral-12B-2409' });
       n.data._out = { answer: res.answer };
       setStatus(n, 'ok', (res.answer||'').slice(0,60)+'...');
     } else if (n.type === 'fn-ner') {
