@@ -796,7 +796,7 @@ async function runNode(n) {
       const query   = resolveInput(n.id,'query');
       if (!query) throw new Error('no query');
       const res = await apiFetch('/ask_text/', { context: context||'', query,
-        ip_address: '158.109.8.133:7000', model_name: 'mistralai/Pixtral-12B-2409' });
+        ip_address: '158.109.8.123:7000', model_name: 'mistralai/Pixtral-12B-2409' });
       n.data._out = { answer: res.answer };
       setStatus(n, 'ok', (res.answer||'').slice(0,60)+'...');
     } else if (n.type === 'fn-concat') {
